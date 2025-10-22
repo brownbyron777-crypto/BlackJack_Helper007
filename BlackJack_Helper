@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Blackjack Helper — Best Action (S17)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --felt:#0b6b3a;
+      --panel:#0e2b1f;
+      --accent:#ffd54f;
+      --card:#fff;
+      --muted:#c8e6d6;
+    }
+    body{
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+      background: linear-gradient(0deg, rgba(0,0,0,0.35), rgba(0,0,0,0.15)), radial-gradient(circle at 20% 10%, rgba(0,0,0,0.15), transparent 10%), var(--felt);
+      color:var(--muted);
+      padding:32px;
+    }
+    .card-table{
+      width:960px; max-width:96vw; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+      border-radius:12px; padding:24px; box-shadow: 0 18px 40px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    h1{ margin:0; font-size:20px; color:var(--accent) }
+    .controls{ display:flex; gap:18px; margin-top:16px; flex-wrap:wrap; align-items:flex-end; }
+    .panel{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      padding:14px; border-radius:10px; min-width:220px; border:1px solid rgba(255,255,255,0.03)
+    }
+    label{ display:block; font-size:12px; color:#dff7e9; margin-bottom:6px }
+    select, input[type="text"]{
+      width:100%; padding:8px 10px; border-radius:8px; border: none; outline:none;
+      background: rgba(255,255,255,0.95); font-weight:600;
+    }
+    button{
+      padding:12px 18px; border-radius:10px; border:none; cursor:pointer;
+      background:var(--accent); color:#012; font-weight:700;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    }
+    .output{
+      margin-top:18px; padding:16px; border-radius:10px; background: rgba(0,0,0,0.2);
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+    }
+    .action{
+      font-size:28px; font-weight:800; color:#fff;
+      padding:8px 14px; border-radius:8px; min-width:160px; text-align:center;
+      background: linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.05));
+    }
+    .action.hit{ background: #c62828; }
+    .action.stand{ background: #2e7d32; }
+    .action.double{ background: #1565c0; }
+    .action.split{ background: #6a1b9a; }
+    .muted { font-size:13px; color:#e6f7ea }
+    .cards-row{ display:flex; gap:8px }
+    .card-visual{
+      min-width:64px; height:90px; background:var(--card); border-radius:8px; display:flex; align-items:center; justify-content:center;
+      color:#111; font-weight:800; box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+    footer{ margin-top:14px; font-size:12px; color:#cdefd1 }
+    .small{ font-size:12px; color:#d6efd9 }
+    @media (max-width:760px){
+      .controls{ flex-direction:column }
+    }
+  </style>
+</head>
+<body>
+  <main class="card-table" role="main">
+    <h1>Blackjack Helper — Best Action (S17)</h1>
+    <p class="muted">Enter your two starting cards and the dealer upcard. Uses standard basic strategy (dealer stands on soft 17). Double is shown only for initial two-card hands.</p>
+
+    <div class="controls">
+      <div class="panel">
+        <label>Your first card</label>
+        <select id="player1">
+          <option value="A">A</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="J">J</option>
+          <option value="Q">Q</option>
+          <option value="K">K</option>
+        </select>
+      </div>
+
+      <div class="panel">
+        <label>Your second card</label>
+        <select id="player2">
+          <option value="A">A</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="J">J</option>
+          <option value="Q">Q</option>
+          <option value="K">K</option>
+        </select>
+      </div>
+
+      <div class="panel">
+        <label>Dealer upcard</label>
+        <select id="dealer">
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="A">A</option>
+        </select>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px;align-self:flex-start">
+        <button id="getAction">Get Best Action</button>
+        <div class="small">Rules assumed: Multi-deck, Dealer <strong>stands</strong> on all 17s (S17). No surrender logic included.</div>
+      </div>
+    </div>
+
+    <div class="output" id="resultBlock" style="display:none">
+      <div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="card-visual" id="vis1">A</div>
+          <div class="card-visual" id="vis2">K</div>
+          <div style="margin-left:10px" class="small">Dealer:</div>
+          <div class="card-visual" id="visD">10</div>
+        </div>
+        <div style="margin-top:8px" id="infoText" class="muted"></div>
+      </div>
+      <div>
+        <div id="actionLabel" class="action">STAND</div>
+        <div style="text-align:right" class="small">Advice based on basic strategy. For advanced play, see notes below.</div>
+      </div>
+    </div>
+
+    <footer>
+      <strong>Notes:</strong> This helper uses standard S17 basic strategy. For long-term edge, advanced players combine basic strategy + card counting (Hi-Lo) + bet sizing, but that requires practice and carries real-world countermeasures by casinos. See sources in the app README. 
+    </footer>
+  </main>
+
+  <script>
+    function cardValue(card){
+      if (card === 'A') return 11;
+      if (['J','Q','K'].includes(card)) return 10;
+      return Number(card);
+    }
+
+    function disp(c){ return c; }
+
+    const dealerRanks = ['2','3','4','5','6','7','8','9','10','A'];
+
+    const pairStrategy = {
+      2:  ['SP','SP','SP','SP','SP','SP','H','H','H','H'],
+      3:  ['SP','SP','SP','SP','SP','SP','H','H','H','H'],
+      4:  ['H','H','H','SP','SP','H','H','H','H','H'],
+      5:  ['D','D','D','D','D','D','D','D','H','H'],
+      6:  ['SP','SP','SP','SP','SP','H','H','H','H','H'],
+      7:  ['SP','SP','SP','SP','SP','SP','H','H','H','H'],
+      8:  ['SP','SP','SP','SP','SP','SP','SP','SP','SP','SP'],
+      9:  ['SP','SP','SP','SP','SP','S','SP','SP','S','S'],
+      10: ['S','S','S','S','S','S','S','S','S','S'],
+      11: ['SP','SP','SP','SP','SP','SP','SP','SP','SP','SP']
+    };
+
+    const softStrategy = {
+      13: ['H','H','H','D','D','H','H','H','H','H'],
+      14: ['H','H','H','D','D','H','H','H','H','H'],
+      15: ['H','H','D','D','D','H','H','H','H','H'],
+      16: ['H','H','D','D','D','H','H','H','H','H'],
+      17: ['H','D','D','D','D','H','H','H','H','H'],
+      18: ['S','D','D','D','D','S','S','H','H','H'],
+      19: ['S','S','S','S','S','S','S','S','S','S'],
+      20: ['S','S','S','S','S','S','S','S','S','S']
+    };
+
+    const hardStrategy = {
+      5:  ['H','H','H','H','H','H','H','H','H','H'],
+      6:  ['H','H','H','H','H','H','H','H','H','H'],
+      7:  ['H','H','H','H','H','H','H','H','H','H'],
+      8:  ['H','H','H','H','H','H','H','H','H','H'],
+      9:  ['H','D','D','D','D','H','H','H','H','H'],
+      10: ['D','D','D','D','D','D','D','D','H','H'],
+      11: ['D','D','D','D','D','D','D','D','D','H'],
+      12: ['H','H','S','S','S','H','H','H','H','H'],
+      13: ['S','S','S','S','S','H','H','H','H','H'],
+      14: ['S','S','S','S','S','H','H','H','H','H'],
+      15: ['S','S','S','S','S','H','H','H','H','H'],
+      16: ['S','S','S','S','S','H','H','H','H','H'],
+      17: ['S','S','S','S','S','S','S','S','S','S'],
+      18: ['S','S','S','S','S','S','S','S','S','S'],
+      19: ['S','S','S','S','S','S','S','S','S','S'],
+      20: ['S','S','S','S','S','S','S','S','S','S'],
+      21: ['S','S','S','S','S','S','S','S','S','S']
+    };
+
+    function findIndex(dealer){ return dealerRanks.indexOf(dealer); }
+    function normalizeFace(card){ if(['J','Q','K'].includes(card)) return '10'; return card; }
+    function isPair(c1,c2){ return (c1===c2) || (['10','J','Q','K'].includes(c1) && ['10','J','Q','K'].includes(c2)); }
+    function isSoft(c1,c2){ return (c1==='A' || c2==='A') && (cardValue(c1)+cardValue(c2)-10 <=21); }
+    function handTotal(c1,c2){ let v1=cardValue(c1), v2=cardValue(c2), total=v1+v2; if(c1==='A' && c2==='A') total=12; if(total>21 && (c1==='A'||c2==='A')) total-=10; return total; }
+
+    function getBasicAction(p1,p2,dealer){
+      const c1=p1, c2=p2, d=dealer, dIdx=findIndex(d);
+      document.getElementById('vis1').textContent=disp(c1);
+      document.getElementById('vis2').textContent=disp(c2);
+      document.getElementById('visD').textContent=disp(d);
+
+      if(isPair(c1,c2)){
+        let pairVal=(c1==='A')?11: (c1==='10'||c1==='J'||c1==='Q'||c1==='K')?10:Number(c1);
+        const arr=pairStrategy[pairVal];
+        if(arr){
+          const res=arr[dIdx];
+          if(res==='SP') return {action:'Split','class':'split', info:Pair of ${pairVal}: Split vs dealer ${d}.};
+          if(res==='D') return {action:'Double','class':'double', info:Pair of ${pairVal}: Double vs dealer ${d}.};
+          if(res==='S') return {action:'Stand','class':'stand', info:Pair of ${pairVal}: Stand vs dealer ${d}.};
+          return {action:'Hit','class':'hit', info:Pair of ${pairVal}: Hit vs dealer ${d}.};
+        }
+      }
+
+      if(isSoft(c1,c2)){
+        let softTotal=handTotal(c1,c2); if(softTotal<13) softTotal=13;
+        const arr=softStrategy[softTotal];
+        if(arr){
+          const res=arr[dIdx];
+          if(res==='D') return {action:'Double','class':'double', info:Soft ${softTotal}: Double vs dealer ${d}.};
+          if(res==='S') return {action:'Stand','class':'stand', info:Soft ${softTotal}: Stand vs dealer ${d}.};
+          return {action:'Hit','class':'hit', info:Soft ${softTotal}: Hit vs dealer ${d}.};
+        }
+      }
+
+      const total=handTotal(c1,c2), t=Math.max(5, Math.min(21,total)), arr=hardStrategy[t];
+      if(arr){
+        const res=arr[dIdx];
+        if(res==='D') return {action:'Double','class':'double', info:Hard ${t}: Double vs dealer ${d}.};
+        if(res==='S') return {action:'Stand','class':'stand', info:Hard ${t}: Stand vs dealer ${d}.};
+        return {action:'Hit','class':'hit', info:Hard ${t}: Hit vs dealer ${d}.};
+      }
+      return {action:'Hit','class':'hit', info:'Default: Hit.'};
+    }
+
+    document.getElementById('getAction').addEventListener('click', ()=>{
+      const p1=normalizeFace(document.getElementById('player1').value);
+      const p2=normalizeFace(document.getElementById('player2').value);
+      const dealer=document.getElementById('dealer').value;
+      const result=getBasicAction(p1,p2,dealer);
+      const resultBlk=document.getElementById('resultBlock');
+      document.getElementById('actionLabel').textContent=result.action.toUpperCase();
+      document.getElementById('actionLabel').className='action '+result.class;
+      document.getElementById('infoText').textContent=result.info;
+      resultBlk.style.display='flex';
+    });
+
+    (function init(){
+      document.getElementById('player1').value='A';
+      document.getElementById('player2').value='K';
+      document.getElementById('dealer').value='10';
+      document.getElementById('getAction').click();
+    })();
+  </script>
+</body>
+</html>
